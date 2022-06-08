@@ -45,7 +45,6 @@ App = {
     }
     web3 = new Web3(App.web3Provider);
 
-
     return App.initContract();
   },
 
@@ -61,7 +60,6 @@ App = {
       // Use our contract to retrieve and mark the adopted pets
       return App.markAdopted();
     });
-
 
     return App.bindEvents();
   },
@@ -92,12 +90,27 @@ App = {
     event.preventDefault();
 
     var petId = parseInt($(event.target).data('id'));
+    var adoptionInstance;
 
-    /*
-     * Replace me...
-     */
+    web3.eth.getAccounts(function (error, accounts) {
+      if (error) {
+        console.log(error);
+      }
+
+      var account = accounts[0];
+
+      App.contracts.Adoption.deployed().then(function (instance) {
+        adoptionInstance = instance;
+
+        // Execute adopt as a transaction by sending account
+        return adoptionInstance.adopt(petId, { from: account });
+      }).then(function (result) {
+        return App.markAdopted();
+      }).catch(function (err) {
+        console.log(err.message);
+      });
+    });
   }
-
 };
 
 $(function () {
